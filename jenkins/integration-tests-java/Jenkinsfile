@@ -12,13 +12,10 @@ pipeline {
         TEST_CASSANDRA_HOST = credentials('env-cassandra-host')
         TEST_BIGTABLE_INSTANCE = credentials('env-bigtable-instance-id')
 
-        TEMP_GIT_BRANCH_LOCAL = sh (
+        GIT_BRANCH_LOCAL = sh (
             script: "echo $branchName | sed -e 's|origin/||g'",
             returnStdout: true
         ).trim()
-
-        GIT_BRANCH_LOCAL = "${env.TEMP_GIT_BRANCH_LOCAL == "" ? "main" : env.TEMP_GIT_BRANCH_LOCAL}"
-
         MAVEN_HOME = "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven"
         PATH = "$PATH:$MAVEN_HOME/bin"
 
