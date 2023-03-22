@@ -12,7 +12,7 @@ pipeline {
         TEST_CASSANDRA_HOST = credentials('env-cassandra-host')
         TEST_BIGTABLE_INSTANCE = credentials('env-bigtable-instance-id')
 
-        GCP_PROJECT = credentials('env-project-id')
+        // GCP_PROJECT = credentials('env-project-id')
         REGION = "us-west1"
         GCS_STAGING_LOCATION = "gs://dataproc-templates/integration-testing"
         SUBNET = credentials('env-gcp-test-subnet')
