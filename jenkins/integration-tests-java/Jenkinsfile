@@ -6,16 +6,6 @@ pipeline {
         DATAPROC_TELEPORT_WEBHOOK_URL = credentials('dataproc-teleport-webhook-url-test')
 
         TEST_JDBC_URL = credentials('env-generic-jdbc-url')
-        TEST_HIVE_METASTORE_URIS = credentials('env-hive-metastore-uris')
-        TEST_KAFKA_BOOTSTRAP_SERVERS = credentials('env-kafka-bootstrap-server')
-        TEST_SPANNER_ID = credentials('env-spanner-id')
-        TEST_CASSANDRA_HOST = credentials('env-cassandra-host')
-        TEST_BIGTABLE_INSTANCE = credentials('env-bigtable-instance-id')
-
-        // GCP_PROJECT = credentials('env-project-id')
-        REGION = "us-west1"
-        GCS_STAGING_LOCATION = "gs://dataproc-templates/integration-testing"
-        SUBNET = credentials('env-gcp-test-subnet')
 
         GIT_BRANCH_LOCAL = sh (
             script: "echo $branchName | sed -e 's|origin/||g'",
@@ -104,7 +94,7 @@ pipeline {
                                 --templateProperty project.id=$GCP_PROJECT \
                                 --templateProperty gcs.spanner.input.format=avro \
                                 --templateProperty gcs.spanner.input.location=gs://dataproc-templates/data/avro/empavro \
-                                --templateProperty gcs.spanner.output.instance=$TEST_SPANNER_ID \
+                                --templateProperty gcs.spanner.output.instance=$ENV_TEST_SPANNER_ID \
                                 --templateProperty gcs.spanner.output.database=spark-ci-db   \
                                 --templateProperty gcs.spanner.output.table=badges \
                                 --templateProperty gcs.spanner.output.saveMode=Overwrite \
@@ -125,7 +115,7 @@ pipeline {
                                 bin/start.sh \
                                 -- --template SPANNERTOGCS \
                                 --templateProperty project.id=$GCP_PROJECT \
-                                --templateProperty spanner.gcs.input.spanner.id=$TEST_SPANNER_ID \
+                                --templateProperty spanner.gcs.input.spanner.id=$ENV_TEST_SPANNER_ID \
                                 --templateProperty spanner.gcs.input.database.id=spark-ci-db \
                                 --templateProperty "spanner.gcs.input.table.id=(select id,name from badges2 where name = 'Teacher' limit 10000)" \
                                 --templateProperty spanner.gcs.output.gcs.path=dataproc-templates/integration-testing/output/SPANNERTOGCS/parquet \
@@ -143,7 +133,7 @@ pipeline {
                                 cd java
                                 
                                 bin/start.sh \
-                                --properties=spark.hadoop.hive.metastore.uris=$TEST_HIVE_METASTORE_URIS \
+                                --properties=spark.hadoop.hive.metastore.uris=$ENV_TEST_HIVE_METASTORE_URIS \
                                 -- --template HIVETOBIGQUERY \
                                 --templateProperty hivetobq.bigquery.location=$GCP_PROJECT.dataproc_templates.test \
                                 --templateProperty hivetobq.sql="select * from default.employee" \
@@ -255,7 +245,7 @@ pipeline {
                                 cd java
                                 
                                 bin/start.sh \
-                                --properties=spark.hadoop.hive.metastore.uris=$TEST_HIVE_METASTORE_URIS \
+                                --properties=spark.hadoop.hive.metastore.uris=$ENV_TEST_HIVE_METASTORE_URIS \
                                 -- --template HIVETOGCS \
                                 --templateProperty hive.input.table=employee \
                                 --templateProperty hive.input.db=default \
@@ -276,7 +266,7 @@ pipeline {
                                 --template KAFKATOBQ \
                                 --templateProperty project.id=$GCP_PROJECT \
                                 --templateProperty kafka.bq.checkpoint.location=gs://dataproc-templates/integration-testing/checkpoint/KAFKATOBQ \
-                                --templateProperty kafka.bq.bootstrap.servers=$TEST_KAFKA_BOOTSTRAP_SERVERS \
+                                --templateProperty kafka.bq.bootstrap.servers=$ENV_TEST_KAFKA_BOOTSTRAP_SERVERS \
                                 --templateProperty kafka.bq.topic=integration-test \
                                 --templateProperty kafka.bq.dataset=kafkatobq \
                                 --templateProperty kafka.bq.table=integration-test \
@@ -344,7 +334,7 @@ pipeline {
                                 --templateProperty jdbctospanner.jdbc.url="$TEST_JDBC_URL" \
                                 --templateProperty jdbctospanner.jdbc.driver.class.name=com.mysql.jdbc.Driver \
                                 --templateProperty jdbctospanner.sql="select * from test.employee" \
-                                --templateProperty jdbctospanner.output.instance=$TEST_SPANNER_ID \
+                                --templateProperty jdbctospanner.output.instance=$ENV_TEST_SPANNER_ID \
                                 --templateProperty jdbctospanner.output.database=spark-ci-db \
                                 --templateProperty jdbctospanner.output.table=employee \
                                 --templateProperty jdbctospanner.output.saveMode=Overwrite \
@@ -365,7 +355,7 @@ pipeline {
                                 --templateProperty project.id=$GCP_PROJECT \
                                 --templateProperty cassandratogcs.input.keyspace=testkeyspace \
                                 --templateProperty cassandratogcs.input.table=emp \
-                                --templateProperty cassandratogcs.input.host=$TEST_CASSANDRA_HOST \
+                                --templateProperty cassandratogcs.input.host=$ENV_TEST_CASSANDRA_HOST \
                                 --templateProperty cassandratogcs.output.format=csv \
                                 --templateProperty cassandratogcs.output.savemode=Overwrite \
                                 --templateProperty cassandratogcs.output.path=gs://dataproc-templates/integration-testing/output/CASSANDRATOGCS/csv
@@ -385,7 +375,7 @@ pipeline {
                                 --templateProperty project.id=$GCP_PROJECT \
                                 --templateProperty cassandratobq.input.keyspace=testkeyspace \
                                 --templateProperty cassandratobq.input.table=emp \
-                                --templateProperty cassandratobq.input.host=$TEST_CASSANDRA_HOST \
+                                --templateProperty cassandratobq.input.host=$ENV_TEST_CASSANDRA_HOST \
                                 --templateProperty cassandratobq.bigquery.location=dataproc_templates.cassandra_bq_emp_table \
                                 --templateProperty cassandratobq.output.mode=Overwrite \
                                 --templateProperty cassandratobq.temp.gcs.location=temp-bucket-for-files
@@ -426,7 +416,7 @@ pipeline {
                             -- --template KAFKATOGCS \
                             --templateProperty project.id=$GCP_PROJECT \
                             --templateProperty kafka.gcs.output.location=gs://dataproc-templates/integration-testing/output/KAFKATOGCS/csv \
-                            --templateProperty kafka.bootstrap.servers=$TEST_KAFKA_BOOTSTRAP_SERVERS \
+                            --templateProperty kafka.bootstrap.servers=$ENV_TEST_KAFKA_BOOTSTRAP_SERVERS \
                             --templateProperty kafka.topic=integration-test \
                             --templateProperty kafka.starting.offset=earliest \
                             --templateProperty kafka.gcs.output.format=csv \
@@ -519,7 +509,7 @@ pipeline {
                             --templateProperty project.id=$GCP_PROJECT \
                             --templateProperty gcs.bigtable.input.location=gs://dataproc-templates/data/csv/GCSToBigTable_cities.csv \
                             --templateProperty gcs.bigtable.input.format=csv \
-                            --templateProperty gcs.bigtable.output.instance.id=$TEST_BIGTABLE_INSTANCE \
+                            --templateProperty gcs.bigtable.output.instance.id=$ENV_TEST_BIGTABLE_INSTANCE \
                             --templateProperty gcs.bigtable.output.project.id=$GCP_PROJECT \
                             --templateProperty gcs.bigtable.table.name=test \
                             --templateProperty gcs.bigtable.column.family=Name
@@ -536,7 +526,7 @@ pipeline {
                             bin/start.sh \
                             -- --template SPANNERTOGCS \
                             --templateProperty project.id=$GCP_PROJECT \
-                            --templateProperty spanner.gcs.input.spanner.id=$TEST_SPANNER_ID \
+                            --templateProperty spanner.gcs.input.spanner.id=$ENV_TEST_SPANNER_ID \
                             --templateProperty spanner.gcs.input.database.id=test-db \
                             --templateProperty spanner.gcs.input.table.id=shakespeare \
                             --templateProperty spanner.gcs.output.gcs.path=gs://dataproc-templates/integration-testing/output/SPANNERTOGCS/csv \
@@ -555,7 +545,7 @@ pipeline {
                             bin/start.sh \
                             -- --template SPANNERTOGCS \
                             --templateProperty project.id=$GCP_PROJECT \
-                            --templateProperty spanner.gcs.input.spanner.id=$TEST_SPANNER_ID \
+                            --templateProperty spanner.gcs.input.spanner.id=$ENV_TEST_SPANNER_ID \
                             --templateProperty spanner.gcs.input.database.id=test-db \
                             --templateProperty spanner.gcs.input.table.id=shakespeare \
                             --templateProperty spanner.gcs.output.gcs.path=gs://dataproc-templates/integration-testing/output/SPANNERTOGCS/avro \
@@ -600,7 +590,7 @@ pipeline {
                                 --templateProperty project.id=$GCP_PROJECT \
                                 --templateProperty cassandratogcs.input.keyspace=testkeyspace \
                                 --templateProperty cassandratogcs.input.table=emp \
-                                --templateProperty cassandratogcs.input.host=$TEST_CASSANDRA_HOST \
+                                --templateProperty cassandratogcs.input.host=$ENV_TEST_CASSANDRA_HOST \
                                 --templateProperty cassandratogcs.output.format=avro \
                                 --templateProperty cassandratogcs.output.savemode=Overwrite \
                                 --templateProperty cassandratogcs.output.path=gs://dataproc-templates/integration-testing/output/CASSANDRATOGCS/java_avro
@@ -618,7 +608,7 @@ pipeline {
                             -- --template KAFKATOGCS \
                             --templateProperty project.id=$GCP_PROJECT \
                             --templateProperty kafka.gcs.output.location=gs://dataproc-templates/integration-testing/output/KAFKATOGCS/avro \
-                            --templateProperty kafka.bootstrap.servers=$TEST_KAFKA_BOOTSTRAP_SERVERS \
+                            --templateProperty kafka.bootstrap.servers=$ENV_TEST_KAFKA_BOOTSTRAP_SERVERS \
                             --templateProperty kafka.topic=integration-test \
                             --templateProperty kafka.starting.offset=earliest \
                             --templateProperty kafka.gcs.output.format=avro \
