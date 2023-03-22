@@ -17,6 +17,8 @@ pipeline {
             returnStdout: true
         ).trim()
 
+        GIT_BRANCH_LOCAL = "${env.GIT_BRANCH_LOCAL == "" ? "main" : env.GIT_BRANCH_LOCAL}"
+
         MAVEN_HOME = "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven"
         PATH = "$PATH:$MAVEN_HOME/bin"
 
@@ -26,7 +28,7 @@ pipeline {
     }
 
     stages {
-                    stage('Checkout') { // for display purposes
+                    stage('Checkout') {
                         steps{
                             git branch: "${GIT_BRANCH_LOCAL}", changelog: false, poll: false, url: 'https://github.com/GoogleCloudPlatform/dataproc-templates/'    
                         }
@@ -51,7 +53,6 @@ pipeline {
                         steps {
                             sh '''
                                 export JARS=gs://dataproc-templates/jars/mysql-connector-java.jar
-                                #export SKIP_BUILD=true
                                 
                                 cd java
                                 
