@@ -24,7 +24,7 @@ pipeline {
 
         REGION="us-west1"
         GCS_STAGING_LOCATION="gs://dataproc-templates/integration-testing"
-        SUBNET='projects/${GCP_PROJECT}/regions/us-west1/subnetworks/test-subnet1'
+        SUBNET='projects/$GCP_PROJECT/regions/us-west1/subnetworks/test-subnet1'
     }
 
     stages {
