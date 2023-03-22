@@ -40,7 +40,7 @@ pipeline {
     post {
         always{
             script {
-                if( env.GIT_BRANCH_LOCAL == 'feature-jenkinfile' ){
+                if( env.GIT_BRANCH_LOCAL == 'festure-jenkinfile' ){
                     googlechatnotification url: DATAPROC_TELEPORT_WEBHOOK_URL,
     				message: 'Jenkins: ${JOB_NAME}\nBuild status is ${BUILD_STATUS}\nSee ${BUILD_URL}\n',
     				notifyFailure: 'true',
