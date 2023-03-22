@@ -5,10 +5,10 @@ pipeline {
     environment {
         DATAPROC_TELEPORT_WEBHOOK_URL = credentials('dataproc-teleport-webhook-url-test')
 
-        TEST_JDBC_URL = credentials('env-generic-jdbc-url')
+        TEST_JDBC_URL = credentials('env-test-jdbc-url')
 
         GIT_BRANCH_LOCAL = sh (
-            script: "echo $branchName | sed -e 's|origin/||g'",
+            script: "echo $branchName | sed -e 's|origin/||g' | sed -e 's|^null\$|main|'",  // Remove "origin/" and set the default branch to main
             returnStdout: true
         ).trim()
         
