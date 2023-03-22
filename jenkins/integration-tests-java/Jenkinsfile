@@ -173,7 +173,7 @@ pipeline {
                                 --templateProperty gcs.jdbc.input.format=avro \
                                 --templateProperty gcs.jdbc.output.table=avrodemo \
                                 --templateProperty gcs.jdbc.output.saveMode=Overwrite   \
-                                --templateProperty gcs.jdbc.output.url='$TEST_JDBC_URL' \
+                                --templateProperty gcs.jdbc.output.url="$TEST_JDBC_URL" \
                                 --templateProperty gcs.jdbc.output.driver='com.mysql.jdbc.Driver'
                         '''
                             
