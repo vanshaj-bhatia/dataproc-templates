@@ -18,10 +18,10 @@ pipeline {
         SUBNET = credentials('env-gcp-test-subnet')
 
         GIT_BRANCH_LOCAL = sh (
-            script: "echo ${branchName:-main} | sed -e 's|origin/||g'",
+            script: "echo $branchName | sed -e 's|origin/||g' | sed 's/^$/main/'",
             returnStdout: true
         ).trim()
-
+        
         MAVEN_HOME = "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven"
         PATH = "$PATH:$MAVEN_HOME/bin"
     }
