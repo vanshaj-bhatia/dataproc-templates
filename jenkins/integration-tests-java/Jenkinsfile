@@ -44,6 +44,7 @@ pipeline {
                     googlechatnotification url: DATAPROC_TELEPORT_WEBHOOK_URL,
     				message: 'Jenkins: ${JOB_NAME}\nBuild status is ${BUILD_STATUS}\nSee ${BUILD_URL}\n',
     				notifyFailure: 'true',
+                    notifySuccess: 'true',
     				notifyAborted: 'true',
     				notifyUnstable: 'true',
     				notifyNotBuilt: 'true',
