@@ -18,7 +18,7 @@ pipeline {
         SUBNET = credentials('env-gcp-test-subnet')
 
         GIT_BRANCH_LOCAL = sh (
-            script: "echo ${branchName:=main} | sed -e 's|origin/||g'",
+            script: "echo ${branchName:-main} | sed -e 's|origin/||g'",
             returnStdout: true
         ).trim()
 
