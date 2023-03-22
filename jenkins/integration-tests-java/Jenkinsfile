@@ -3,8 +3,8 @@ pipeline {
     agent any
 
     environment {
-        GCP_PROJECT = credentials('env-project-id')
         DATAPROC_TELEPORT_WEBHOOK_URL = credentials('dataproc-teleport-webhook-url-test')
+
         TEST_JDBC_URL = credentials('env-generic-jdbc-url')
         TEST_HIVE_METASTORE_URIS = credentials('env-hive-metastore-uris')
         TEST_KAFKA_BOOTSTRAP_SERVERS = credentials('env-kafka-bootstrap-server')
@@ -12,16 +12,16 @@ pipeline {
         TEST_CASSANDRA_HOST = credentials('env-cassandra-host')
         TEST_BIGTABLE_INSTANCE = credentials('env-bigtable-instance-id')
 
-        GIT_BRANCH_LOCAL = sh (
-            script: "echo $branchName | sed -e 's|origin/||g'",
-            returnStdout: true
-        ).trim()
+        GCP_PROJECT = credentials('env-project-id')
+        REGION = "us-west1"
+        GCS_STAGING_LOCATION = "gs://dataproc-templates/integration-testing"
+        SUBNET = credentials('env-gcp-test-subnet')
+
+        GIT_BRANCH_LOCAL = sh '''
+            echo $branchName | sed -e 's|origin/||g'
+        '''
         MAVEN_HOME = "/var/lib/jenkins/tools/hudson.tasks.Maven_MavenInstallation/maven"
         PATH = "$PATH:$MAVEN_HOME/bin"
-
-        REGION="us-west1"
-        GCS_STAGING_LOCATION="gs://dataproc-templates/integration-testing"
-        SUBNET=credentials('env-gcp-test-subnet')
     }
 
     stages {
