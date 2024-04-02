@@ -33,7 +33,6 @@ public class PubSubToGCSTest {
   void setUp() {
     PropertyUtil.getProperties().setProperty(PUBSUB_GCS_INPUT_PROJECT_ID_PROP, "some value");
     PropertyUtil.getProperties().setProperty(PUBSUB_GCS_INPUT_SUBSCRIPTION_PROP, "some value");
-    PropertyUtil.getProperties().setProperty(PUBSUB_GCS_OUTPUT_PROJECT_ID_PROP, "some value");
     PropertyUtil.getProperties().setProperty(PUBSUB_GCS_BUCKET_NAME, "some value");
     PropertyUtil.getProperties().setProperty(PUBSUB_GCS_OUTPUT_DATA_FORMAT, "some value");
     SparkSession spark = SparkSession.builder().master("local").getOrCreate();
@@ -56,7 +55,7 @@ public class PubSubToGCSTest {
     pubSubToGCS = new PubSubToGCS();
 
     Exception exception =
-        assertThrows(IllegalArgumentException.class, () -> pubSubToGCS.runTemplate());
+        assertThrows(IllegalArgumentException.class, () -> pubSubToGCS.validateInput());
     assertEquals(
         "Required parameters for PubSubToGCS not passed. "
             + "Set mandatory parameter for PubSubToGCS template "
@@ -68,7 +67,6 @@ public class PubSubToGCSTest {
     return Stream.of(
         PUBSUB_GCS_INPUT_PROJECT_ID_PROP,
         PUBSUB_GCS_INPUT_SUBSCRIPTION_PROP,
-        PUBSUB_GCS_OUTPUT_PROJECT_ID_PROP,
         PUBSUB_GCS_BUCKET_NAME,
         PUBSUB_GCS_OUTPUT_DATA_FORMAT);
   }

@@ -31,19 +31,24 @@ import com.google.cloud.dataproc.templates.hive.HiveToBigQuery;
 import com.google.cloud.dataproc.templates.hive.HiveToGCS;
 import com.google.cloud.dataproc.templates.jdbc.JDBCToBigQuery;
 import com.google.cloud.dataproc.templates.jdbc.JDBCToGCS;
+import com.google.cloud.dataproc.templates.jdbc.JDBCToJDBC;
 import com.google.cloud.dataproc.templates.jdbc.JDBCToSpanner;
 import com.google.cloud.dataproc.templates.kafka.KafkaToBQ;
+import com.google.cloud.dataproc.templates.kafka.KafkaToBQDstream;
 import com.google.cloud.dataproc.templates.kafka.KafkaToGCS;
+import com.google.cloud.dataproc.templates.kafka.KafkaToGCSDstream;
 import com.google.cloud.dataproc.templates.kafka.KafkaToPubSub;
 import com.google.cloud.dataproc.templates.pubsub.PubSubToBQ;
 import com.google.cloud.dataproc.templates.pubsub.PubSubToBigTable;
 import com.google.cloud.dataproc.templates.pubsub.PubSubToGCS;
+import com.google.cloud.dataproc.templates.pubsublite.PubSubLiteToBigTable;
 import com.google.cloud.dataproc.templates.s3.S3ToBigQuery;
 import com.google.cloud.dataproc.templates.snowflake.SnowflakeToGCS;
 import com.google.cloud.dataproc.templates.util.PropertyUtil;
 import com.google.cloud.dataproc.templates.util.TemplateUtil;
 import com.google.cloud.dataproc.templates.word.WordCount;
 import com.google.common.collect.ImmutableMap;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeoutException;
@@ -72,11 +77,13 @@ public class DataProcTemplate {
           .put(TemplateName.HIVETOBIGQUERY, (args) -> new HiveToBigQuery())
           .put(TemplateName.PUBSUBTOBQ, (args) -> new PubSubToBQ())
           .put(TemplateName.PUBSUBTOBIGTABLE, (args) -> new PubSubToBigTable())
+          .put(TemplateName.PUBSUBLITETOBIGTABLE, (args) -> new PubSubLiteToBigTable())
           .put(TemplateName.PUBSUBTOGCS, (args) -> new PubSubToGCS())
           .put(TemplateName.REDSHIFTTOGCS, RedshiftToGCS::of)
           .put(TemplateName.GCSTOBIGQUERY, (args) -> new GCStoBigquery())
           .put(TemplateName.GCSTOBIGTABLE, (args) -> new GCStoBigTable())
           .put(TemplateName.GCSTOGCS, (args) -> new GCStoGCS())
+          .put(TemplateName.GCSTOMONGO, (args) -> new GCStoMongo())
           .put(TemplateName.BIGQUERYTOGCS, (args) -> new BigQueryToGCS())
           .put(TemplateName.S3TOBIGQUERY, (args) -> new S3ToBigQuery())
           .put(TemplateName.SPANNERTOGCS, SpannerToGCS::of)
@@ -94,7 +101,10 @@ public class DataProcTemplate {
           .put(TemplateName.GENERAL, GeneralTemplate::of)
           .put(TemplateName.DATAPLEXGCSTOBQ, DataplexGCStoBQ::of)
           .put(TemplateName.SNOWFLAKETOGCS, SnowflakeToGCS::of)
+          .put(TemplateName.JDBCTOJDBC, JDBCToJDBC::of)
           .put(TemplateName.TEXTTOBIGQUERY, (args) -> new TextToBigquery())
+          .put(TemplateName.KAFKATOBQDSTREAM, (args) -> new KafkaToBQDstream())
+          .put(TemplateName.KAFKATOGCSDSTREAM, (args) -> new KafkaToGCSDstream())
           .build();
   private static final String TEMPLATE_NAME_LONG_OPT = "template";
   private static final String TEMPLATE_PROPERTY_LONG_OPT = "templateProperty";
@@ -148,7 +158,7 @@ public class DataProcTemplate {
   }
 
   public static void main(String... args)
-      throws StreamingQueryException, TimeoutException, InterruptedException {
+      throws StreamingQueryException, TimeoutException, SQLException, InterruptedException {
     BaseTemplate template = createTemplateAndRegisterProperties(args);
     runSparkJob(template);
   }
@@ -201,7 +211,10 @@ public class DataProcTemplate {
    * @param template the template to run.
    */
   static void runSparkJob(BaseTemplate template)
-      throws StreamingQueryException, TimeoutException, InterruptedException {
+      throws IllegalArgumentException, StreamingQueryException, TimeoutException, SQLException,
+          InterruptedException {
+    LOGGER.debug("Validating input parameters");
+    template.validateInput();
     LOGGER.debug("Start runSparkJob");
     template.runTemplate();
     LOGGER.debug("End runSparkJob");
