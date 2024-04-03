@@ -21,6 +21,9 @@ steps:
     - "-c"
     - |
       #!/usr/bin/env bash
+
+      apt-get update && apt-get install -y jq
+      
       JENKINS_URL=https://dataproctemplatesci.com/job/dataproc-templates-build/job/temp-builds/job/cloudbuild-trigger-test-job/build?token=CLOUDBUILD_TOKEN
       CREDS=admin:yadavaja-sandbox
 
