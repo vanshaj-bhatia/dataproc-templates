@@ -14,9 +14,10 @@
 # gs://temp_dpt_binaries/2024-04-03_feature-cicd-improvements/java/dataproc-templates-1.0-SNAPSHOT.jar
 
 steps:
-- name: 'gcr.io/cloud-builders/bash'
-  entrypoint: 'bash'
-  args: ['-c', 'echo "My Secret..."']
+- name: 'bash'
+  script: |
+    #!/usr/bin/env bash
+    echo "Hello World"
   # - name: gcr.io/cloud-builders/git
   #   args:
   #     - clone
