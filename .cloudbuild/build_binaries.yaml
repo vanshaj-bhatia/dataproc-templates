@@ -101,6 +101,7 @@ steps:
 #         echo "Executable URL to be polled for the triggered Jenkins job: $$POLLING_URL"
 #         status="UNKNOWN"
 #         while [[ $$status != "SUCCESS" ]]; do
+#         # TODO: sleep 90
 #           sleep 1
 #           status=$(curl -s -u $$CREDS $$POLLING_URL | jq -r '.result')
 #           if [[ $$? != 0 ]]; then
@@ -124,10 +125,11 @@ steps:
 #         gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/
   - id: trigger-promote-binaries-pipeline
     name: gcr.io/cloud-builders/gcloud
+    # TODO: dataproc-templates
     args:
       - '-c'
       - >
         gcloud builds triggers run promote-java-binaries
-        --project dataproc-templates
+        --project sandbox-vbhatia
         --substitutions _TMP_GCS_URI=gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/dataproc-templates-1.0-SNAPSHOT.jar,_TARGET_GCS_URI_TAG=gs://${_PUBLIC_BUCKET}/$(date -u +%Y-%m-%d)_$TAG_NAME/java/,_TARGET_GCS_URI_LATEST=gs://${_PUBLIC_BUCKET}/latest/java/${_BINARY_PREFIX}.jar
     entrypoint: bash

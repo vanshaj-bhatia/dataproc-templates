@@ -22,7 +22,7 @@ steps:
         echo "_TMP_GCS_URI: ${_TMP_GCS_URI}"
         echo "_TARGET_GCS_URI_TAG: ${_TARGET_GCS_URI_TAG}"
         gsutil cp ${_TMP_GCS_URI} ${_TARGET_GCS_URI_TAG}
-  - id: cp-java-jar-to-gcs-tag-folder
+  - id: cp-java-jar-to-gcs-latest-folder
     name: gcr.io/cloud-builders/gsutil
     entrypoint: 'bash'
     args:
