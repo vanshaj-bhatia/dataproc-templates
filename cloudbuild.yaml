@@ -14,32 +14,52 @@
 # gs://temp_dpt_binaries/2024-04-03_feature-cicd-improvements/java/dataproc-templates-1.0-SNAPSHOT.jar
 
 steps:
-- name: 'bash'
+- id: test bash
+  name: 'bash'
   script: |
     #!/usr/bin/env bash
-    echo "Hello World"
-  # - name: gcr.io/cloud-builders/git
-  #   args:
-  #     - clone
-  #     - 'https://github.com/vanshaj-bhatia/${_REPO}.git'
-  #   id: check-out-source-code
-  # - name: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-8'
-  #   args:
-  #     - package
-  #     - '-Dmaven.test.skip=true'
-  #   dir: '${_REPO}/java'
-  #   id: build-java-jar
-  # - name: gcr.io/cloud-builders/gsutil
-  #   entrypoint: 'bash'
-  #   args:
-  #     - '-c'
-  #     - |
-  #       gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_TEMP_BUCKET}/$(date -u +%Y-%m-%d)_$BRANCH_NAME/java/
-  #   id: cp-java-jar-to-gcs-tag-folder
-  # - name: gcr.io/cloud-builders/gsutil
-  #   args:
-  #     - cp
-  #     - dataproc-templates-1.0-SNAPSHOT.jar
-  #     - 'gs://${_TEMP_BUCKET}/latest/java/${_BINARY_PREFIX}.jar'
-  #   dir: '${_REPO}/java/target'
-  #   id: cp-java-jar-to-gcs-latest-folder
+    JENKINS_URL=https://dataproctemplatesci.com/job/dataproc-templates-build/job/temp-builds/job/cloudbuild-trigger-test-job/build?token=CLOUDBUILD_TOKEN
+    CREDS=admin:yadavaja-sandbox
+
+    BUILD_URL=$(curl -i -s -u $CREDS $JENKINS_URL | grep "location" | awk '{printf $2}' | tr -d '\r')
+    if [[ $? != 0 ]]; then
+      echo "API request failed. Please check the Jenkins URL and API token."
+      exit 1
+    fi
+
+    JOB_URL=${BUILD_URL}api/json
+
+    echo "Build Job Queue URL received on Jenkins trigger: $JOB_URL"
+    EXECUTABLE_URL=$(curl -s -u $CREDS $JOB_URL | jq -r '.executable.url')
+    if [[ $? != 0 ]]; then
+        echo "API request failed. Please check the Jenkins URL and API token."
+        exit 1
+    fi           
+      echo "Executable URL received on the first attempt: [$EXECUTABLE_URL]"
+      while [[ "$EXECUTABLE_URL" == null ]]; do
+        EXECUTABLE_URL=$(curl -s -u $CREDS $JOB_URL | jq -r '.executable.url')
+        if [[ $? != 0 ]]; then
+          echo "API request failed. Please check the Jenkins URL and API token."
+          exit 1
+        fi          
+      done
+    POLLING_URL=${EXECUTABLE_URL}api/json
+
+
+    echo "Executable URL to be polled for the triggered Jenkins job: $POLLING_URL"
+      status="UNKNOWN"
+      while [[ $status != "SUCCESS" ]]; do
+        sleep 1
+        status=$(curl -s -u $CREDS $POLLING_URL | jq -r '.result')
+        if [[ $? != 0 ]]; then
+          echo "JSON data could not be parsed. Exiting..."
+          exit 1
+        fi
+        echo "Result Polled on Job Executable URL: [$status]"            
+        [ "$status" == null  ] && continue
+        if [[ $status == "FAILURE" || $status == "NOT_BUILT" || $status == "ABORTED" || $status == "UNSTABLE" ]]; then
+          echo "Jenkins job $JOB_NAME with Build URL $JOB_URL completed with status [$status]"
+          exit 99
+        fi
+      done
+      echo "Jenkins job $JOB_NAME with Build URL $JOB_URL completed with status $status"
