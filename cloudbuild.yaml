@@ -15,8 +15,11 @@
 
 steps:
 - id: test bash
-  name: 'bash'
-  script: |
+  name: gcr.io/cloud-builders/gcloud
+  entrypoint: 'bash'
+  args: 
+    - "-c"
+    - |
     #!/usr/bin/env bash
     JENKINS_URL=https://dataproctemplatesci.com/job/dataproc-templates-build/job/temp-builds/job/cloudbuild-trigger-test-job/build?token=CLOUDBUILD_TOKEN
     CREDS=admin:yadavaja-sandbox
