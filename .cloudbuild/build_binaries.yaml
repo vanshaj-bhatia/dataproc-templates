@@ -70,7 +70,7 @@ steps:
 
         apt-get update && apt-get install -y jq
 
-        JENKINS_URL=https://dataproctemplatesci.com/job/dataproc-templates-build/job/temp-builds/job/cloudbuild-trigger-test-job/build?token=CLOUDBUILD_TOKEN
+        JENKINS_URL=${_JENKINS_URL}
         CREDS=$(gcloud beta secrets versions access --secret="jenkins-admin-credentials" latest)
 
         BUILD_URL=$(curl -i -s -u $$CREDS $$JENKINS_URL | grep "location" | awk '{printf $$2}' | tr -d '\r')
@@ -115,11 +115,19 @@ steps:
           fi
         done
         echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status $$status"
+  - id: stage-java-jar-to-temp-gcs-directory
+    name: gcr.io/cloud-builders/gsutil
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_TEMP_BUCKET}/tmp/$TAG_NAME/java/
   - id: trigger-promote-binaries-pipeline
     name: gcr.io/cloud-builders/gcloud
     args:
       - '-c'
       - >
         gcloud builds triggers run promote-java-binaries
-        --project=dataproc-templates
+        --project dataproc-templates
+        --substitutions _TMP_GCS_URI=gs://${_TEMP_BUCKET}/tmp/$TAG_NAME/java/dataproc-templates-1.0-SNAPSHOT.jar,_TARGET_GCS_URI_TAG=gs://${_PUBLIC_BUCKET}/$(date -u +%Y-%m-%d)_$TAG_NAME/java/,_TARGET_GCS_URI_LATEST=gs://${_PUBLIC_BUCKET}/latest/java/${_BINARY_PREFIX}.jar
     entrypoint: bash
