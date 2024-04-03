@@ -24,24 +24,24 @@ steps:
       JENKINS_URL=https://dataproctemplatesci.com/job/dataproc-templates-build/job/temp-builds/job/cloudbuild-trigger-test-job/build?token=CLOUDBUILD_TOKEN
       CREDS=admin:yadavaja-sandbox
 
-      BUILD_URL=$(curl -i -s -u $CREDS $JENKINS_URL | grep "location" | awk '{printf $2}' | tr -d '\r')
-      if [[ $? != 0 ]]; then
+      BUILD_URL=$(curl -i -s -u $$CREDS $$JENKINS_URL | grep "location" | awk '{printf $$2}' | tr -d '\r')
+      if [[ $$? != 0 ]]; then
         echo "API request failed. Please check the Jenkins URL and API token."
         exit 1
       fi
 
       JOB_URL=${BUILD_URL}api/json
 
-      echo "Build Job Queue URL received on Jenkins trigger: $JOB_URL"
-      EXECUTABLE_URL=$(curl -s -u $CREDS $JOB_URL | jq -r '.executable.url')
-      if [[ $? != 0 ]]; then
+      echo "Build Job Queue URL received on Jenkins trigger: $$JOB_URL"
+      EXECUTABLE_URL=$(curl -s -u $$CREDS $$JOB_URL | jq -r '.executable.url')
+      if [[ $$? != 0 ]]; then
           echo "API request failed. Please check the Jenkins URL and API token."
           exit 1
       fi           
         echo "Executable URL received on the first attempt: [$EXECUTABLE_URL]"
         while [[ "$EXECUTABLE_URL" == null ]]; do
-          EXECUTABLE_URL=$(curl -s -u $CREDS $JOB_URL | jq -r '.executable.url')
-          if [[ $? != 0 ]]; then
+          EXECUTABLE_URL=$(curl -s -u $$CREDS $$JOB_URL | jq -r '.executable.url')
+          if [[ $$? != 0 ]]; then
             echo "API request failed. Please check the Jenkins URL and API token."
             exit 1
           fi          
@@ -49,20 +49,20 @@ steps:
       POLLING_URL=${EXECUTABLE_URL}api/json
 
 
-      echo "Executable URL to be polled for the triggered Jenkins job: $POLLING_URL"
+      echo "Executable URL to be polled for the triggered Jenkins job: $$POLLING_URL"
         status="UNKNOWN"
-        while [[ $status != "SUCCESS" ]]; do
+        while [[ $$status != "SUCCESS" ]]; do
           sleep 1
-          status=$(curl -s -u $CREDS $POLLING_URL | jq -r '.result')
-          if [[ $? != 0 ]]; then
+          status=$(curl -s -u $$CREDS $$POLLING_URL | jq -r '.result')
+          if [[ $$? != 0 ]]; then
             echo "JSON data could not be parsed. Exiting..."
             exit 1
           fi
           echo "Result Polled on Job Executable URL: [$status]"            
           [ "$status" == null  ] && continue
-          if [[ $status == "FAILURE" || $status == "NOT_BUILT" || $status == "ABORTED" || $status == "UNSTABLE" ]]; then
-            echo "Jenkins job $JOB_NAME with Build URL $JOB_URL completed with status [$status]"
+          if [[ $$status == "FAILURE" || $$status == "NOT_BUILT" || $$status == "ABORTED" || $$status == "UNSTABLE" ]]; then
+            echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status [$status]"
             exit 99
           fi
         done
-        echo "Jenkins job $JOB_NAME with Build URL $JOB_URL completed with status $status"
+        echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status $$status"
