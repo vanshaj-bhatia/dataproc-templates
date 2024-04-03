@@ -30,7 +30,7 @@ steps:
         exit 1
       fi
 
-      JOB_URL=${BUILD_URL}api/json
+      JOB_URL=$${BUILD_URL}api/json
 
       echo "Build Job Queue URL received on Jenkins trigger: $$JOB_URL"
       EXECUTABLE_URL=$(curl -s -u $$CREDS $$JOB_URL | jq -r '.executable.url')
@@ -38,15 +38,15 @@ steps:
           echo "API request failed. Please check the Jenkins URL and API token."
           exit 1
       fi           
-        echo "Executable URL received on the first attempt: [$EXECUTABLE_URL]"
-        while [[ "$EXECUTABLE_URL" == null ]]; do
+        echo "Executable URL received on the first attempt: [$$EXECUTABLE_URL]"
+        while [[ "$$EXECUTABLE_URL" == null ]]; do
           EXECUTABLE_URL=$(curl -s -u $$CREDS $$JOB_URL | jq -r '.executable.url')
           if [[ $$? != 0 ]]; then
             echo "API request failed. Please check the Jenkins URL and API token."
             exit 1
           fi          
         done
-      POLLING_URL=${EXECUTABLE_URL}api/json
+      POLLING_URL=$${EXECUTABLE_URL}api/json
 
 
       echo "Executable URL to be polled for the triggered Jenkins job: $$POLLING_URL"
@@ -59,9 +59,9 @@ steps:
             exit 1
           fi
           echo "Result Polled on Job Executable URL: [$status]"            
-          [ "$status" == null  ] && continue
+          [ "$$status" == null  ] && continue
           if [[ $$status == "FAILURE" || $$status == "NOT_BUILT" || $$status == "ABORTED" || $$status == "UNSTABLE" ]]; then
-            echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status [$status]"
+            echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status [$$status]"
             exit 99
           fi
         done
