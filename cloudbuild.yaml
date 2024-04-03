@@ -11,30 +11,34 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# gs://temp_dpt_binaries/2024-04-03_feature-cicd-improvements/java/dataproc-templates-1.0-SNAPSHOT.jar
 
 steps:
-  - name: gcr.io/cloud-builders/git
-    args:
-      - clone
-      - 'https://github.com/vanshaj-bhatia/${_REPO}.git'
-    id: check-out-source-code
-  - name: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-8'
-    args:
-      - package
-      - '-Dmaven.test.skip=true'
-    dir: '${_REPO}/java'
-    id: build-java-jar
-  - name: gcr.io/cloud-builders/gsutil
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_TEMP_BUCKET}/$(date -u +%Y-%m-%d)_$BRANCH_NAME/java/
-    id: cp-java-jar-to-gcs-tag-folder
-  - name: gcr.io/cloud-builders/gsutil
-    args:
-      - cp
-      - dataproc-templates-1.0-SNAPSHOT.jar
-      - 'gs://${_TEMP_BUCKET}/latest/java/${_BINARY_PREFIX}.jar'
-    dir: '${_REPO}/java/target'
-    id: cp-java-jar-to-gcs-latest-folder
+- name: 'my-build-image'
+  entrypoint: 'bash'
+  args: ['-c', 'echo "My Secret..."']
+  # - name: gcr.io/cloud-builders/git
+  #   args:
+  #     - clone
+  #     - 'https://github.com/vanshaj-bhatia/${_REPO}.git'
+  #   id: check-out-source-code
+  # - name: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-8'
+  #   args:
+  #     - package
+  #     - '-Dmaven.test.skip=true'
+  #   dir: '${_REPO}/java'
+  #   id: build-java-jar
+  # - name: gcr.io/cloud-builders/gsutil
+  #   entrypoint: 'bash'
+  #   args:
+  #     - '-c'
+  #     - |
+  #       gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_TEMP_BUCKET}/$(date -u +%Y-%m-%d)_$BRANCH_NAME/java/
+  #   id: cp-java-jar-to-gcs-tag-folder
+  # - name: gcr.io/cloud-builders/gsutil
+  #   args:
+  #     - cp
+  #     - dataproc-templates-1.0-SNAPSHOT.jar
+  #     - 'gs://${_TEMP_BUCKET}/latest/java/${_BINARY_PREFIX}.jar'
+  #   dir: '${_REPO}/java/target'
+  #   id: cp-java-jar-to-gcs-latest-folder
