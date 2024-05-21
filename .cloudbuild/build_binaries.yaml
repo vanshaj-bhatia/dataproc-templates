@@ -54,12 +54,19 @@ steps:
       - 'gs://${_PUBLIC_BUCKET}/latest/python/'
     dir: '${_REPO}/python'
     id: cp-python-egg-to-gcs-latest-folder
-  - name: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-8'
+  - id: build-java-jar
+    name: 'gcr.io/cloud-builders/mvn:3.5.0-jdk-8'
     args:
       - package
       - '-Dmaven.test.skip=true'
     dir: '${_REPO}/java'
-    id: build-java-jar
+  - id: stage-java-jar-to-temp-gcs-directory
+    name: gcr.io/cloud-builders/gsutil
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/
   - id: run-integration-tests-for-ui-templates
     name: gcr.io/cloud-builders/gcloud
     entrypoint: 'bash'
@@ -70,7 +77,7 @@ steps:
 
         apt-get update && apt-get install -y jq
 
-        JENKINS_URL=${_JENKINS_URL}
+        JENKINS_URL=${_JENKINS_UI_INT_TEST_URL}&jarPath=gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/dataproc-templates-1.0-SNAPSHOT.jar
         CREDS=$(gcloud beta secrets versions access --secret="jenkins-admin-credentials" latest)
 
         BUILD_URL=$(curl -i -s -u $$CREDS $$JENKINS_URL | grep "location" | awk '{printf $$2}' | tr -d '\r')
@@ -116,13 +123,6 @@ steps:
           fi
         done
         echo "Jenkins job $$JOB_NAME with Build URL $$JOB_URL completed with status $$status"
-  - id: stage-java-jar-to-temp-gcs-directory
-    name: gcr.io/cloud-builders/gsutil
-    entrypoint: 'bash'
-    args:
-      - '-c'
-      - |
-        gsutil cp ${_REPO}/java/target/dataproc-templates-1.0-SNAPSHOT.jar gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/
   - id: trigger-promote-binaries-pipeline
     name: gcr.io/cloud-builders/gcloud
     # TODO: dataproc-templates
