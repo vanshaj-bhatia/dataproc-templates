@@ -77,10 +77,14 @@ steps:
 
         apt-get update && apt-get install -y jq
 
-        JENKINS_URL=${_JENKINS_UI_INT_TEST_URL}&jarPath=gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/dataproc-templates-1.0-SNAPSHOT.jar
+        JENKINS_URL="${_JENKINS_UI_INT_TEST_URL}&jarPath=gs://${_PUBLIC_BUCKET}/tmp/$TAG_NAME/java/dataproc-templates-1.0-SNAPSHOT.jar"
         CREDS=$(gcloud beta secrets versions access --secret="jenkins-admin-credentials" latest)
+        echo $$JENKINS_URL
+        echo $$CREDS
 
-        BUILD_URL=$(curl -i -s -u $$CREDS $$JENKINS_URL | grep "location" | awk '{printf $$2}' | tr -d '\r')
+        BUILD_URL=$(curl -i -s -u $$CREDS "$$JENKINS_URL" | grep "location" | awk '{printf $$2}' | tr -d '\r')
+        echo $$BUILD_URL
+
         if [[ $$? != 0 ]]; then
           echo "API request failed. Please check the Jenkins URL and API token."
           exit 1
