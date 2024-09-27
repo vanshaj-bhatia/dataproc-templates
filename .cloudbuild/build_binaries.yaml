@@ -19,16 +19,13 @@ steps:
       - 'https://github.com/vanshaj-bhatia/${_REPO}.git'
     id: check-out-source-code
   - name: python
+    entrypoint: 'bash'
     args:
-      - -m
-      - pip
-      - install
-      - setuptools
-      - && 
-      - python
-      - setup.py
-      - bdist_egg
-      - '--output=${_BINARY_PREFIX}.egg'
+      - -c
+      - |
+        export PYTHONPATH=$PYTHONPATH:${_REPO}/python
+        python -m pip install setuptools
+        python setup.py bdist_egg '--output=${_BINARY_PREFIX}.egg'
     dir: '${_REPO}/python'
     id: build-python-egg
   - name: gcr.io/cloud-builders/gsutil
