@@ -18,6 +18,9 @@ steps:
       - clone
       - 'https://github.com/vanshaj-bhatia/${_REPO}.git'
     id: check-out-source-code
+  - name: 'python' # Or your desired Python version
+    entrypoint: 'pip'
+    args: ['install', 'setuptools']
   - name: python
     args:
       - python
