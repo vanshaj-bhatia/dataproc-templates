@@ -20,15 +20,11 @@ steps:
     id: check-out-source-code
   - name: python
     args:
-      - python
       - -m
       - pip
       - install
       - setuptools
-    dir: '${_REPO}/python'
-    id: install-setuptools
-  - name: python
-    args:
+      - && 
       - python
       - setup.py
       - bdist_egg
