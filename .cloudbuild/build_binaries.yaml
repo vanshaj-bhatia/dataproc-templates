@@ -23,7 +23,6 @@ steps:
     args:
       - -c
       - |
-        export PYTHONPATH=$PYTHONPATH:${_REPO}/python
         python -m pip install setuptools
         python setup.py bdist_egg '--output=${_BINARY_PREFIX}.egg'
     dir: '${_REPO}/python'
